@@ -73,6 +73,9 @@ function mouseMoved() {
 // Called when the mouse cursor is pressed.
 function mousePressed() {
     cursorSize = cursorSizeDefault * 4;
+
+    // Prevent default behavior.
+    return false;
 }
 
 // Called each frame.
