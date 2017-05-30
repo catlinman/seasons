@@ -13,7 +13,7 @@ var colorBackground;
 // Cursor definitions.
 var cursorVector; // Positional vector of the cursor.
 var cursorSize; // Current radius value of the cursor.
-var cursorSizeDefault; // Default radius value of hte cursor.
+var cursorSizeDefault; // Default radius value of the cursor.
 
 // Draw a circle at the mouse cursor.
 function drawCursor() {
@@ -24,6 +24,7 @@ function drawCursor() {
     cursorVector = cursorVector.lerp(mouseX, mouseY, 0, 0.20);
 
     // Draw an ellipse at the cursor vector position.
+    fill(255, 255, 255);
     ellipse(cursorVector.x, cursorVector.y, cursorSize);
 }
 
@@ -75,14 +76,34 @@ function mousePressed() {
     cursorSize = cursorSizeDefault * 4;
 }
 
+function drawSun(x, y, r, num, c) {
+    var cr = red(c);
+    var cg = green(c);
+    var cb = blue(c);
+
+    for (i = 1; i < num + 1; i++) {
+        fill(
+            cr,
+            cg,
+            cb,
+            255 - (255 / num) * i - 1
+        );
+
+        ellipse(
+            x,
+            y,
+            ((r / num) * i) + sin(frameCount / 150) * r / (num * 2)
+
+            );
+    }
+}
+
 // Called each frame.
 function draw() {
     background(colorBackground); // Reset the background color.
 
+    drawSun(width / 2, sceneHeight / 2, 256, 8, color(255, 245, 3));
+
     // Draw the cursor.
     drawCursor();
-
-    // Draw a circle in the middle of the screen as a placeholder.
-    fill(255, 255, 255);
-    ellipse(width / 2, sceneHeight / 2, 86 + sin(frameCount / 100) * 32);
 }
