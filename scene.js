@@ -18,6 +18,27 @@ var cursorSizeDefault; // Default radius value of the cursor.
 
 // Preload assets. These are instantiated in the preload function.
 var treeImage;
+var bushImage;
+var bushImage2;
+var groundImage;
+
+var particles = [];
+
+function createParticles(n) {
+    // Create particles objects;
+    for (var i = 0; i < n; i++) {
+        particles[i] = createVector(random(windowWidth), random(sceneHeight));
+    }
+}
+
+// Particle creation function. Uses window size for particle count.
+function drawParticles() {
+    // Iterate over our particle range and start adding data to the particle array.
+    for (var i = 0; i < particles.length; i++) {
+        particles[i].x = (particles[i].x + 0.5) % windowWidth;
+        ellipse(particles[i].x, particles[i].y, 2);
+    }
+}
 
 // Draw a circle at the mouse cursor.
 function drawCursor() {
@@ -32,9 +53,41 @@ function drawCursor() {
     ellipse(cursorVector.x, cursorVector.y, cursorSize);
 }
 
+function drawGrass(x, y, w, h, o, s) {
+    image(grassImage1, x + sin(o + frameCount * s) * 2.5, y, w * 16, h * 16);
+}
+
+function drawSun(x, y, r, num, c) {
+    // Separate color channels for easier use.
+    var cr = red(c);
+    var cg = green(c);
+    var cb = blue(c);
+
+    // Draw iterations of ellipses with different opacity.
+    for (i = 1; i < num + 1; i++) {
+        // Set the fill color for the given ellipse.
+        fill(
+            cr,
+            cg,
+            cb,
+            255 - (255 / num) * i - 1
+        );
+
+        // Draw the actual ellipse and animate its radius.
+        ellipse(
+            x,
+            y,
+            ((r / num) * i) + sin(frameCount / 150) * r / (num * 2)
+        );
+    }
+}
+
 // Preload assets before the scene starts.
 function preload() {
-    treeImage = loadImage("assets/tree.svg");
+    treeImage = loadImage("assets/tree.png");
+    groundImage = loadImage("assets/ground.png");
+    grassImage1 = loadImage("assets/grass1.png");
+    grassImage2 = loadImage("assets/grass2.png");
 }
 
 // Program entry point.
@@ -71,6 +124,45 @@ function setup() {
 
     // Set color variables.
     colorBackground = color(48, 35, 69);
+
+    createParticles(50);
+}
+
+// Called each frame.
+function draw() {
+    background(colorBackground); // Reset the background color.
+
+    // Draw a sun in the center of the scene.
+    drawSun(width / 2, sceneHeight / 2, 512, 8, color(255, 245, 3));
+
+    // Tint foreground images.
+    tint(48, 35, 69, 235);
+    // Draw foreground elements here.
+
+    // Draw main scene elements here.
+    tint(48, 35, 69, 255);
+    image(treeImage, width / 2 + 25, sceneHeight / 2 + 40, 200, 256);
+    image(groundImage, width / 2, sceneHeight / 2 + 150, 512, 512);
+    drawGrass(width / 2 + 20, sceneHeight / 2 + 155, 1, 1, 0, 0.02);
+
+    drawGrass(width / 2 - 50, sceneHeight / 2 + 165, 1, 1, 1, 0.02);
+
+    // Set the fill for drawn elements.
+    fill(48, 35, 69, 255);
+    drawParticles();
+
+    ellipse(width / 3.2, sceneHeight / 3, 100);
+    ellipse(width / 3.6, sceneHeight / 2.3, 100);
+
+    // Draw the cursor.
+    drawCursor();
+
+    // Draw a veil above everything.
+    fill(48, 35, 69, sceneReveal);
+    //rect(0, 0, windowWidth, windowHeight);
+
+    // Remove opacity.
+    sceneReveal--;
 }
 
 // Called when the window resizes.
@@ -90,60 +182,4 @@ function mousePressed() {
 
     // Prevent default behavior.
     return false;
-}
-
-function drawSun(x, y, r, num, c) {
-    // Separate color channels for easier use.
-    var cr = red(c);
-    var cg = green(c);
-    var cb = blue(c);
-
-    // Draw iterations of ellipses with different opacity.
-    for (i = 1; i < num + 1; i++) {
-        // Set the fill color for the given ellipse.
-        fill(
-            cr,
-            cg,
-            cb,
-            255 - (255 / num) * i - 1
-        );
-
-        // Draw the actual ellipse and animate its radius.
-        ellipse(
-            x,
-            y,
-            ((r / num) * i) + sin(frameCount / 150) * r / (num * 2)
-        );
-    }
-}
-
-// Called each frame.
-function draw() {
-    background(colorBackground); // Reset the background color.
-
-    // Draw a sun in the center of the scene.
-    drawSun(width / 2, sceneHeight / 2, 312, 8, color(255, 245, 3));
-
-    // Tint foreground images.
-    tint(48, 35, 69, 235);
-    image(treeImage, width / 2, sceneHeight / 2 + 40, 128, 256);
-
-    // Set the fill for drawn elements.
-    fill(48, 35, 69, 235);
-
-    // Start drawing ellipses.
-    ellipse(width / 2 + 150, sceneHeight / 2 + 64, 64, 86);
-    ellipse(width / 2 - 150, sceneHeight / 2 + 64, 64, 86);
-    ellipse(width / 2 - 120, sceneHeight / 2 + 86, 64);
-    ellipse(width / 2 + 120, sceneHeight / 2 + 86, 48);
-
-    // Draw the cursor.
-    drawCursor();
-
-    // Draw a veil above everything.
-    fill(48, 35, 69, sceneReveal);
-    rect(0, 0, windowWidth, windowHeight);
-
-    // Remove opacity.
-    sceneReveal--;
 }

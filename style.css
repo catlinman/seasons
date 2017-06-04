@@ -17,7 +17,7 @@ body {
     text-align: center;
     color: #fff;
     font-family: 'Pacifico', cursive;
-    cursor: none;
+    /*cursor: none;*/
 }
 
 #canvas {
