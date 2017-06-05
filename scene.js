@@ -17,26 +17,31 @@ var cursorSize; // Current radius value of the cursor.
 var cursorSizeDefault; // Default radius value of the cursor.
 
 // Preload assets. These are instantiated in the preload function.
-var treeImage;
-var bushImage;
-var bushImage2;
-var groundImage;
+var imageTree;
+var imageGround;
+var imageGrass1;
+var imageGrass2;
 
+// Particle array.
 var particles = [];
 
+// Inserts a new vector into the particle array.
 function createParticles(n) {
     // Create particles objects;
     for (var i = 0; i < n; i++) {
-        particles[i] = createVector(random(windowWidth), random(sceneHeight));
+        particles[i] = createVector(random(width), random(sceneHeight));
     }
 }
 
-// Particle creation function. Uses window size for particle count.
+// Particle creation function. Iterates over particles in the array, moves and draws them.
 function drawParticles() {
-    // Iterate over our particle range and start adding data to the particle array.
     for (var i = 0; i < particles.length; i++) {
-        particles[i].x = (particles[i].x + 0.5) % windowWidth;
-        ellipse(particles[i].x, particles[i].y, 2);
+        // Move the x and y values and clip them around the scene and window size.
+        particles[i].x = (particles[i].x + random(0, 0.5)) % sceneWidth;
+        particles[i].y = (particles[i].y + 0.5) % sceneHeight;
+
+        // Draw the particle.
+        ellipse(particles[i].x + sceneWidth, particles[i].y, 3);
     }
 }
 
@@ -49,14 +54,31 @@ function drawCursor() {
     cursorVector = cursorVector.lerp(mouseX, mouseY, 0, 0.20);
 
     // Draw an ellipse at the cursor vector position.
-    fill(255, 255, 255);
     ellipse(cursorVector.x, cursorVector.y, cursorSize);
 }
 
-function drawGrass(x, y, w, h, o, s) {
-    image(grassImage1, x + sin(o + frameCount * s) * 2.5, y, w * 16, h * 16);
+// Draws a cloud.
+function drawCloud(x, y, r, n) {
+    ellipse(x, y, r);
+
+    r = r / 2;
+    v = r;
+
+    for (var i = 0; i < n; i++) {
+        ellipse(x + v, y, r);
+        ellipse(x - v, y, r);
+
+        v = v + r / 2;
+        r = r / 2;
+    }
 }
 
+// Draw a grass tuft.
+function drawGrass(x, y, w, h, o, s) {
+    image(imageGrass1, x + sin(o + frameCount * s) * 2.5, y, w * 16, h * 16);
+}
+
+// Draw a sun.
 function drawSun(x, y, r, num, c) {
     // Separate color channels for easier use.
     var cr = red(c);
@@ -84,10 +106,10 @@ function drawSun(x, y, r, num, c) {
 
 // Preload assets before the scene starts.
 function preload() {
-    treeImage = loadImage("assets/tree.png");
-    groundImage = loadImage("assets/ground.png");
-    grassImage1 = loadImage("assets/grass1.png");
-    grassImage2 = loadImage("assets/grass2.png");
+    imageTree = loadImage("assets/tree.png");
+    imageGround = loadImage("assets/ground.png");
+    imageGrass1 = loadImage("assets/grass1.png");
+    imageGrass2 = loadImage("assets/grass2.png");
 }
 
 // Program entry point.
@@ -125,6 +147,7 @@ function setup() {
     // Set color variables.
     colorBackground = color(48, 35, 69);
 
+    // Create particles.
     createParticles(50);
 }
 
@@ -133,33 +156,43 @@ function draw() {
     background(colorBackground); // Reset the background color.
 
     // Draw a sun in the center of the scene.
+    stroke(255, 255, 255);
     drawSun(width / 2, sceneHeight / 2, 512, 8, color(255, 245, 3));
 
-    // Tint foreground images.
-    tint(48, 35, 69, 235);
-    // Draw foreground elements here.
+    // Reset stroke.
+    noStroke();
 
     // Draw main scene elements here.
     tint(48, 35, 69, 255);
-    image(treeImage, width / 2 + 25, sceneHeight / 2 + 40, 200, 256);
-    image(groundImage, width / 2, sceneHeight / 2 + 150, 512, 512);
-    drawGrass(width / 2 + 20, sceneHeight / 2 + 155, 1, 1, 0, 0.02);
+    fill(48, 35, 69, 255);
 
+    // Draw the tree.
+    image(imageTree, width / 2, sceneHeight / 2 + 45, 256, 256);
+
+    // Draw tree leaf ellipsis.
+    ellipse(width / 2 + 20, sceneHeight / 2, 64 + sin(frameCount / 70) * 8, 120 + sin(frameCount / 90) * 16);
+    ellipse(width / 2 - 25, sceneHeight / 2, 64 + cos(frameCount / 100) * 8, 120 + cos(frameCount / 95) * 16);
+
+    // Draw the ground image.
+    image(imageGround, width / 2, sceneHeight / 2 + 150, 512, 512);
+
+    // Draw grass tufts.
+    drawGrass(width / 2 + 25, sceneHeight / 2 + 155, 1, 1, 0, 0.02);
+    drawGrass(width / 2 + 125, sceneHeight / 2 + 170, 1, 1, 0, 0.02);
     drawGrass(width / 2 - 50, sceneHeight / 2 + 165, 1, 1, 1, 0.02);
 
-    // Set the fill for drawn elements.
-    fill(48, 35, 69, 255);
+    // Draw particles.
     drawParticles();
-
-    ellipse(width / 3.2, sceneHeight / 3, 100);
-    ellipse(width / 3.6, sceneHeight / 2.3, 100);
+    drawCloud(windowWidth / 2 - 200, sceneHeight / 2 - 150, 128, 4);
+    drawCloud(windowWidth / 2 + 200, sceneHeight / 2 - 90, 86, 4);
 
     // Draw the cursor.
+    fill(255, 255, 255);
     drawCursor();
 
     // Draw a veil above everything.
     fill(48, 35, 69, sceneReveal);
-    //rect(0, 0, windowWidth, windowHeight);
+    rect(0, 0, width, height);
 
     // Remove opacity.
     sceneReveal--;
