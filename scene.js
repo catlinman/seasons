@@ -41,7 +41,7 @@ function drawParticles() {
         particles[i].y = (particles[i].y + 0.5) % sceneHeight;
 
         // Draw the particle.
-        ellipse(particles[i].x + sceneWidth, particles[i].y, 3);
+        ellipse(particles[i].x + (windowWidth / 2) - (sceneWidth / 2), particles[i].y, 3);
     }
 }
 
@@ -170,8 +170,8 @@ function draw() {
     image(imageTree, width / 2, sceneHeight / 2 + 45, 256, 256);
 
     // Draw tree leaf ellipsis.
-    ellipse(width / 2 + 20, sceneHeight / 2, 64 + sin(frameCount / 70) * 8, 120 + sin(frameCount / 90) * 16);
-    ellipse(width / 2 - 25, sceneHeight / 2, 64 + cos(frameCount / 100) * 8, 120 + cos(frameCount / 95) * 16);
+    // ellipse(width / 2 + 20, sceneHeight / 2, 64 + sin(frameCount / 70) * 8, 120 + sin(frameCount / 90) * 16);
+    // ellipse(width / 2 - 25, sceneHeight / 2, 64 + cos(frameCount / 100) * 8, 120 + cos(frameCount / 95) * 16);
 
     // Draw the ground image.
     image(imageGround, width / 2, sceneHeight / 2 + 150, 512, 512);
