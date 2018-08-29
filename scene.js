@@ -25,6 +25,8 @@ var imageGrass2;
 // Particle array.
 var particles = [];
 
+var debug = false;
+
 // Inserts a new vector into the particle array.
 function createParticles(n) {
     // Create particles objects;
@@ -35,13 +37,15 @@ function createParticles(n) {
 
 // Particle creation function. Iterates over particles in the array, moves and draws them.
 function drawParticles() {
+    if(debug == true) stroke(255, 255, 255);
+
     for (var i = 0; i < particles.length; i++) {
         // Move the x and y values and clip them around the scene and window size.
         particles[i].x = (particles[i].x + random(0, 0.5)) % sceneWidth;
-        particles[i].y = (particles[i].y + 0.5) % sceneHeight;
+        particles[i].y = (particles[i].y + 5.5) % sceneHeight;
 
         // Draw the particle.
-        ellipse(particles[i].x + sceneWidth, particles[i].y, 3);
+        ellipse(particles[i].x + (windowWidth / 2) - (sceneWidth / 2), particles[i].y, 1, 10);
     }
 }
 
@@ -62,13 +66,13 @@ function drawCloud(x, y, r, n) {
     ellipse(x, y, r);
 
     r = r / 2;
-    v = r;
+    d = r;
 
     for (var i = 0; i < n; i++) {
-        ellipse(x + v, y, r);
-        ellipse(x - v, y, r);
+        ellipse(x + d, y, r);
+        ellipse(x - d, y, r);
 
-        v = v + r / 2;
+        d = d + r / 2;
         r = r / 2;
     }
 }
@@ -86,13 +90,13 @@ function drawSun(x, y, r, num, c) {
     var cb = blue(c);
 
     // Draw iterations of ellipses with different opacity.
-    for (i = 1; i < num + 1; i++) {
+    for (var i = 0; i < num + 1; i++) {
         // Set the fill color for the given ellipse.
         fill(
             cr,
             cg,
             cb,
-            255 - (255 / num) * i - 1
+            255 - (255 / num) * i
         );
 
         // Draw the actual ellipse and animate its radius.
@@ -157,7 +161,7 @@ function draw() {
 
     // Draw a sun in the center of the scene.
     stroke(255, 255, 255);
-    drawSun(width / 2, sceneHeight / 2, 512, 8, color(255, 245, 3));
+    drawSun(width / 2, sceneHeight / 2, 640, 8, color(255, 245, 3));
 
     // Reset stroke.
     noStroke();
@@ -167,11 +171,8 @@ function draw() {
     fill(48, 35, 69, 255);
 
     // Draw the tree.
+    tint(48, 35, 69, 255);
     image(imageTree, width / 2, sceneHeight / 2 + 45, 256, 256);
-
-    // Draw tree leaf ellipsis.
-    ellipse(width / 2 + 20, sceneHeight / 2, 64 + sin(frameCount / 70) * 8, 120 + sin(frameCount / 90) * 16);
-    ellipse(width / 2 - 25, sceneHeight / 2, 64 + cos(frameCount / 100) * 8, 120 + cos(frameCount / 95) * 16);
 
     // Draw the ground image.
     image(imageGround, width / 2, sceneHeight / 2 + 150, 512, 512);
@@ -184,7 +185,7 @@ function draw() {
     // Draw particles.
     drawParticles();
     drawCloud(windowWidth / 2 - 200, sceneHeight / 2 - 150, 128, 4);
-    drawCloud(windowWidth / 2 + 200, sceneHeight / 2 - 90, 86, 4);
+    drawCloud(windowWidth / 2 + 230, sceneHeight / 2 - 90, 140, 4);
 
     // Draw the cursor.
     fill(255, 255, 255);
