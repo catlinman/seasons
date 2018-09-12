@@ -21,4 +21,4 @@ The site is automatically pushed to the
 ## License ##
 
 This repository is released under the MIT license. For more information please
-refer to [LICENSE](https://github.com/catlinman/seasons/blob/master/LICENSE)
+refer to [LICENSE](https://github.com/catlinman/seasons/blob/master/LICENSE).

@@ -3,118 +3,85 @@
 // Store the canvas variable for easy access.
 var canvas;
 
+// Store a debugging value for further use.
+const DEBUG = false;
+
+// Store frame and update timing variables.
+const DRAWRATE = 60;
+const UPDATERATE = 60;
+
 // Scene definitions.
-var sceneWidth;
-var sceneHeight;
-var sceneReveal;
+let sceneWidth;
+let sceneHeight;
+let sceneReveal;
 
 // Color definitions.
-var colorBackground;
+let colorBackground;
 
-// Cursor definitions.
-var cursorVector; // Positional vector of the cursor.
-var cursorSize; // Current radius value of the cursor.
-var cursorSizeDefault; // Default radius value of the cursor.
+// Cursor placeholder.
+let cursor;
 
-// Preload assets. These are instantiated in the preload function.
-var imageTree;
-var imageGround;
-var imageGrass1;
-var imageGrass2;
+// Custom cursor object.
+class VirtualCursor {
+    constructor(x, y, scale, speed) {
+        this.position = createVector(x, y); // Positional vector of the cursor.
+        this.scale = scale; // Origin radius value of the cursor.
 
-// Particle array.
-var particles = [];
+        this.speed = speed;
 
-var debug = false;
+        this.positionLerp = this.position; // Smoothed position of the cursor.
+        this.scaleLerp = this.scale; // Smoothed radius value of the cursor.
+        this.speedLerp = this.speed; // Smoothed radius value of the cursor.
+    }
 
-// Inserts a new vector into the particle array.
-function createParticles(n) {
-    // Create particles objects;
-    for (var i = 0; i < n; i++) {
-        particles[i] = createVector(random(width), random(sceneHeight));
+    // -------------------------------------------------------------------- //
+
+    // TODO: Instead of creating methods that expose position and scale the
+    // cursor should be manipulated through "move" and "click" methods.
+
+    setPosition(x, y, snap) {
+        this.position.set(x, y);
+
+        // Whether the animation should instantly update.
+        if(snap === true) this.positionLerp.set(this.position);
+    }
+
+    setScale(s, snap) {
+        this.scale = s;
+
+        // Whether the animation should instantly update.
+        if(snap === true) this.scaleLerp = s;
+    }
+
+    // -------------------------------------------------------------------- //
+
+    update() {
+        // Scale the cursor to correspond with the destination value.
+        this.scaleLerp = lerp(this.scaleLerp, this.scale, this.speed / 10);
+
+        // Interpolate the lerped position towards the destination actual position.
+        this.positionLerp = this.positionLerp.lerp(this.position, this.speed);
+
+        // Reset the cursor so it disappears over time.
+        this.scale = 0;
+    }
+
+    draw() {
+        fill(255, 255, 255);
+
+        ellipse(this.positionLerp.x, this.positionLerp.y, this.scaleLerp);
     }
 }
 
-// Particle creation function. Iterates over particles in the array, moves and draws them.
-function drawParticles() {
-    if(debug == true) stroke(255, 255, 255);
-
-    for (var i = 0; i < particles.length; i++) {
-        // Move the x and y values and clip them around the scene and window size.
-        particles[i].x = (particles[i].x + random(0, 0.5)) % sceneWidth;
-        particles[i].y = (particles[i].y + 5.5) % sceneHeight;
-
-        // Draw the particle.
-        ellipse(particles[i].x + (windowWidth / 2) - (sceneWidth / 2), particles[i].y, 1, 10);
-    }
-}
-
-// Draw a circle at the mouse cursor.
-function drawCursor() {
-    // Slowly decrease cursor size until it is not visible.
-    cursorSize = cursorSize + (-cursorSize) * 0.025;
-
-    // Interpolate the cursor to the actual position.
-    cursorVector = cursorVector.lerp(mouseX, mouseY, 0, 0.20);
-
-    // Draw an ellipse at the cursor vector position.
-    ellipse(cursorVector.x, cursorVector.y, cursorSize);
-}
-
-// Draws a cloud.
-function drawCloud(x, y, r, n) {
-    ellipse(x, y, r);
-
-    r = r / 2;
-    d = r;
-
-    for (var i = 0; i < n; i++) {
-        ellipse(x + d, y, r);
-        ellipse(x - d, y, r);
-
-        d = d + r / 2;
-        r = r / 2;
-    }
-}
-
-// Draw a grass tuft.
-function drawGrass(x, y, w, h, o, s) {
-    image(imageGrass1, x + sin(o + frameCount * s) * 2.5, y, w * 16, h * 16);
-}
-
-// Draw a sun.
-function drawSun(x, y, r, num, c) {
-    // Separate color channels for easier use.
-    var cr = red(c);
-    var cg = green(c);
-    var cb = blue(c);
-
-    // Draw iterations of ellipses with different opacity.
-    for (var i = 0; i < num + 1; i++) {
-        // Set the fill color for the given ellipse.
-        fill(
-            cr,
-            cg,
-            cb,
-            255 - (255 / num) * i
-        );
-
-        // Draw the actual ellipse and animate its radius.
-        ellipse(
-            x,
-            y,
-            ((r / num) * i) + sin(frameCount / 150) * r / (num * 2)
-        );
+class GrassBlade {
+    constructor() {
+        // TODO: Add functionality. Blade of grass that moves from touching.
+        // Has a start and end point and uses a math function for its shape.
     }
 }
 
 // Preload assets before the scene starts.
-function preload() {
-    imageTree = loadImage("assets/tree.png");
-    imageGround = loadImage("assets/ground.png");
-    imageGrass1 = loadImage("assets/grass1.png");
-    imageGrass2 = loadImage("assets/grass2.png");
-}
+function preload() {}
 
 // Program entry point.
 function setup() {
@@ -125,7 +92,7 @@ function setup() {
     canvas.parent("canvas");
 
     // Set the right settings.
-    frameRate(60); // Set a constant framerate.
+    frameRate(DRAWRATE); // Set a constant framerate.
     noStroke(); // Disable strokes by default.
     noCursor(); // Disable the default mouse cursor.
 
@@ -138,30 +105,28 @@ function setup() {
     sceneReveal = 255;
 
     // Set the default mouse position to the center of the drawing scene.
-    mouseX = width / 2;
-    mouseY = sceneHeight / 2;
-
-    // Set the mouse cursor vector to the current mouse position.
-    cursorVector = createVector(width / 2, sceneHeight / 2);
-
-    // Set the correct values for the cursor size.
-    cursorSizeDefault = 16;
-    cursorSize = 0;
+    cursor = new VirtualCursor(width / 2, sceneHeight / 2, 16, 0.25);
 
     // Set color variables.
     colorBackground = color(48, 35, 69);
+}
 
-    // Create particles.
-    createParticles(50);
+// Custom update loop that runs a different frame amount from the draw loop.
+function update(dt) {
+    cursor.update(dt);
 }
 
 // Called each frame.
 function draw() {
+    // Update depending on how many extra frames are required to compensate.
+    // This method allows lower frame rate drawing but high frame rate processing.
+    for(let i = 0; i < ceil(UPDATERATE / DRAWRATE); i++)
+        update(window.performance.now() - canvas._pInst._lastFrameTime);
+
     background(colorBackground); // Reset the background color.
 
     // Draw a sun in the center of the scene.
     stroke(255, 255, 255);
-    drawSun(width / 2, sceneHeight / 2, 640, 8, color(255, 245, 3));
 
     // Reset stroke.
     noStroke();
@@ -170,30 +135,11 @@ function draw() {
     tint(48, 35, 69, 255);
     fill(48, 35, 69, 255);
 
-    // Draw the tree.
-    tint(48, 35, 69, 255);
-    image(imageTree, width / 2, sceneHeight / 2 + 45, 256, 256);
-
-    // Draw the ground image.
-    image(imageGround, width / 2, sceneHeight / 2 + 150, 512, 512);
-
-    // Draw grass tufts.
-    drawGrass(width / 2 + 25, sceneHeight / 2 + 155, 1, 1, 0, 0.02);
-    drawGrass(width / 2 + 125, sceneHeight / 2 + 170, 1, 1, 0, 0.02);
-    drawGrass(width / 2 - 50, sceneHeight / 2 + 165, 1, 1, 1, 0.02);
-
-    // Draw particles.
-    drawParticles();
-    drawCloud(windowWidth / 2 - 200, sceneHeight / 2 - 150, 128, 4);
-    drawCloud(windowWidth / 2 + 230, sceneHeight / 2 - 90, 140, 4);
-
-    // Draw the cursor.
-    fill(255, 255, 255);
-    drawCursor();
-
     // Draw a veil above everything.
     fill(48, 35, 69, sceneReveal);
     rect(0, 0, width, height);
+
+    cursor.draw();
 
     // Remove opacity.
     sceneReveal--;
@@ -206,13 +152,16 @@ function windowResized() {
 
 // Called when the mouse cursor is moved.
 function mouseMoved() {
+    // Update the cursor position if moved.
+    cursor.setPosition(mouseX, mouseY);
+
     // Scale the cursor to its default size if it's being moved.
-    cursorSize = cursorSize + (cursorSizeDefault - cursorSize) * 0.1;
+    cursor.setScale(16);
 }
 
 // Called when the mouse cursor is pressed.
 function mousePressed() {
-    cursorSize = cursorSizeDefault * 4;
+    cursor.setScale(32, true);
 
     // Prevent default behavior.
     return false;
